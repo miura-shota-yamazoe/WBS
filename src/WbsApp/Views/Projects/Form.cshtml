@@ -1,0 +1,41 @@
+@model ProjectForm
+@{
+    var id = ViewData["ProjectId"] as Guid?;
+    var action = id is null ? "Create" : "Edit";
+}
+<h1>@ViewData["Title"]</h1>
+<form asp-controller="Projects" asp-action="@action" asp-route-id="@id" method="post" data-save-form>
+    <partial name="_FormErrors" />
+    @Html.EditorFor(model => model.Name)
+    <div class="form-field">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" rows="5" class="text-input" aria-describedby="Description-error"></textarea>
+        <span asp-validation-for="Description" id="Description-error" class="field-error"></span>
+    </div>
+    <div class="form-field">
+        <label asp-for="StartDate"></label><span class="required-label">必須</span>
+        <input asp-for="StartDate" type="date" asp-format="{0:yyyy-MM-dd}" class="text-input" required aria-describedby="StartDate-error" />
+        <span asp-validation-for="StartDate" id="StartDate-error" class="field-error"></span>
+    </div>
+    <div class="form-field">
+        <label asp-for="EndDate"></label><span class="required-label">必須</span>
+        <input asp-for="EndDate" type="date" asp-format="{0:yyyy-MM-dd}" class="text-input" required aria-describedby="EndDate-error" />
+        <span asp-validation-for="EndDate" id="EndDate-error" class="field-error"></span>
+    </div>
+    <div class="form-field">
+        <label asp-for="Status"></label><span class="required-label">必須</span>
+        <select asp-for="Status" class="text-input" required aria-describedby="Status-error">
+            <option value="">選択してください</option>
+            <option value="0">進行中</option><option value="1">完了</option>
+        </select>
+        <span asp-validation-for="Status" id="Status-error" class="field-error"></span>
+    </div>
+    <div class="form-actions">
+        <button type="submit">@(id is null ? "登録" : "保存")</button>
+        <a asp-controller="Home" asp-action="Index">キャンセル</a>
+        <span data-save-status role="status"></span>
+    </div>
+</form>
+@section Scripts {
+    <script src="~/js/project-form.js" asp-append-version="true" defer></script>
+}

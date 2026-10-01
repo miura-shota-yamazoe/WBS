@@ -5,6 +5,7 @@
     if (ViewData.ModelMetadata.IsRequired)
     {
         attributes["aria-required"] = "true";
+        attributes["required"] = "required";
     }
     if (ViewData.ModelState.TryGetValue(ViewData.TemplateInfo.HtmlFieldPrefix, out var state) && state.Errors.Count > 0)
     {

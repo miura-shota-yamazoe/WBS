@@ -6,13 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    options.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor((value, field) => $"{field}の入力形式を確認してください。");
+    options.ModelBindingMessageProvider.SetValueIsInvalidAccessor(value => "入力値が正しくありません。入力内容を確認してください。");
+    options.ModelBindingMessageProvider.SetUnknownValueIsInvalidAccessor(field => $"{field}の入力形式を確認してください。");
+});
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<ILoggerProvider, DailyFileLoggerProvider>();
 builder.Services.AddSingleton<DatabaseLocation>();
 builder.Services.AddDbContext<AppDbContext>((services, options) =>
     options.UseSqlite(services.GetRequiredService<DatabaseLocation>().ConnectionString));
 builder.Services.AddScoped<DatabaseInitializer>();
+builder.Services.AddScoped<WbsApp.Services.ProjectService>();
 
 var app = builder.Build();
 
