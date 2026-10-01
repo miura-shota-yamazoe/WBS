@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WbsApp", "src\WbsApp\WbsApp.csproj", "{78D352D0-9497-4F4F-938D-603B0D982D62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WbsApp.Tests", "tests\WbsApp.Tests\WbsApp.Tests.csproj", "{5B5F31E0-5730-41AE-9EC3-576F3602CF39}"
+EndProject
+Global
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|Any CPU = Debug|Any CPU
+        Release|Any CPU = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {78D352D0-9497-4F4F-938D-603B0D982D62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {78D352D0-9497-4F4F-938D-603B0D982D62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {78D352D0-9497-4F4F-938D-603B0D982D62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {78D352D0-9497-4F4F-938D-603B0D982D62}.Release|Any CPU.Build.0 = Release|Any CPU
+        {5B5F31E0-5730-41AE-9EC3-576F3602CF39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {5B5F31E0-5730-41AE-9EC3-576F3602CF39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {5B5F31E0-5730-41AE-9EC3-576F3602CF39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {5B5F31E0-5730-41AE-9EC3-576F3602CF39}.Release|Any CPU.Build.0 = Release|Any CPU
+    EndGlobalSection
+EndGlobal

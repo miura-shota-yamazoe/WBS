@@ -1,0 +1,29 @@
+# Build and test output
+**/bin/
+**/obj/
+TestResults/
+artifacts/
+coverage/
+
+# IDE and local settings
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.env
+.env.*
+
+# User data and logs
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.log
+
+# OS files
+Thumbs.db
+.DS_Store
