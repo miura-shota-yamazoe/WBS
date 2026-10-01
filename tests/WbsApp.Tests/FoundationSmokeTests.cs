@@ -1,15 +1,14 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace WbsApp.Tests;
 
-public sealed class FoundationSmokeTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class FoundationSmokeTests : IClassFixture<IsolatedAppFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly IsolatedAppFactory _factory;
 
-    public FoundationSmokeTests(WebApplicationFactory<Program> factory)
+    public FoundationSmokeTests(IsolatedAppFactory factory)
     {
         _factory = factory;
     }
