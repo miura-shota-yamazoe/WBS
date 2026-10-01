@@ -2,7 +2,7 @@
 
 Windows PC内でプロジェクトと親子タスクを管理する、ASP.NET Core MVC製のWBSアプリです。
 
-現在は **T03：保存先・初回DB作成・起動時Migration** まで完了しています。起動時にSQLiteの永続DBを初期化し、再起動後もデータを保持します。画面はアプリ名のみです。業務画面・exe起動終了・配布版は後続タスクで実装します。
+現在は **T04：共通レイアウト・入力エラー・ログ** まで完了しています。永続DBに加え、共通レイアウト・通知・入力エラー表示、POSTのCSRF検証、エラーID付き例外画面、日別ファイルログを実装済みです。業務画面・exe起動終了・配布版は後続タスクで実装します。
 
 ## 開発環境
 
@@ -51,16 +51,17 @@ dotnet ef --version
 
 ```powershell
 $developmentDatabase = Join-Path $PWD 'artifacts\dev\wbsapp.db'
-dotnet run --project src/WbsApp --launch-profile WbsApp -- --Database:Path "$developmentDatabase"
+$developmentLogs = Join-Path $PWD 'artifacts\dev\Logs'
+dotnet run --project src/WbsApp --launch-profile WbsApp -- --Database:Path "$developmentDatabase" --Logging:Directory "$developmentLogs"
 ```
 
 [開発時の画面](http://127.0.0.1:5180) をブラウザーで開きます。使用中のポートを変更する場合は、次のように起動してください。
 
 ```powershell
-dotnet run --project src/WbsApp --no-launch-profile -- --urls http://127.0.0.1:5181 --Database:Path "$developmentDatabase"
+dotnet run --project src/WbsApp --no-launch-profile -- --urls http://127.0.0.1:5181 --Database:Path "$developmentDatabase" --Logging:Directory "$developmentLogs"
 ```
 
-現在の開発時の終了方法は実行中ターミナルでCtrl+Cです。exeのブラウザー自動起動、多重起動防止、画面からの終了操作はT16で実装します。上記コマンドでは開発用DBを作業フォルダー内に作成します。自動テストは専用の一時DBとメモリー内DBを使い、利用者の既定DBを変更しません。
+現在の開発時の終了方法は実行中ターミナルでCtrl+Cです。exeのブラウザー自動起動、多重起動防止、画面からの終了操作はT16で実装します。上記コマンドでは開発用DB・ログを作業フォルダー内に作成します。自動テストは専用の一時DB・ログとメモリー内DBを使い、利用者の既定DB・ログを変更しません。
 
 ## 資料と進捗管理
 
@@ -86,9 +87,20 @@ T02のデザイン時FactoryはMigration生成用のメモリー内接続です�
 - `Database:Path` を指定しない場合は `%LOCALAPPDATA%\WbsApp\Data\wbsapp.db` に保存します。保存フォルダーは起動時に作成します。
 - 開発・テストで保存先を変更する場合は、コマンドラインの `--Database:Path` または環境変数 `Database__Path` でDBファイルの絶対パスを指定します。空文字・相対パス・メモリー内接続は指定できません。
 - 新規DB（テーブルのない空ファイルを含む）には、Webサーバー開始前に初期Migrationを適用します。既存DBで更新が不要なら、そのまま起動してデータを保持します。
-- 未対応のMigration履歴、破損DB、保存先不備、Migration失敗では通常起動を停止します。現在はコンソールへ原因を記録します。利用者向けのWindows起動案内・エラーID・ファイルログはT04/T16で追加します。
+- 未対応のMigration履歴、破損DB、保存先不備、Migration失敗では通常起動を停止します。DB初期化失敗はコンソールとファイルログへエラーIDを記録します。利用者向けWindows起動案内はT16で追加します。
 - **既存DBに未適用Migrationがある場合は、更新前バックアップ連携（T17c）が完成するまで更新せず停止します。** 初回Migrationの途中失敗で内部管理テーブルが残った場合も自動更新・自動削除しません。破損DBや既存利用データを削除して起動し直す操作は行わないでください。開発用の使い捨てDBだけ、新しい絶対パスで作り直せます。
 - 接続は外部キー有効・プール無効で構成し、終了後のDB接続を保持しません。SQL待機時間は5秒ですが、単一起動制御・Migrationロック残留の扱い・更新復旧はT16/T17の範囲です。
+
+## 共通画面・エラー・ログ
+
+- 共通レイアウトとCSSはアプリ内に同梱しています。外部CDNへのアクセスはありません。
+- 通知は `_Notifications`、全体入力エラーは `_FormErrors`、文字列入力と項目別エラーは `EditorTemplates/String` を共用します。フォームではこれらとRazorのForm Tag Helperを使用し、POST時はサーバー検証後に同じViewModelを再表示して値を保持します。業務フォームはT05以降で実装します。
+- MVC全体へCSRF検証を適用済みです。エラー表示専用アクションだけは再表示のため検証を除外しており、データを変更しません。
+- 予期しないエラーはHTTP 500を維持し、内部例外・SQL・入力内容を画面へ出さず、エラーIDと再操作案内を表示します。HTTP 400/404にも案内を表示します。戻り先は現在ホームで、プロジェクト一覧完成時に接続します。
+- ログの既定保存先は `%LOCALAPPDATA%\WbsApp\Logs`。変更する場合は `--Logging:Directory` または `Logging__Directory` へ絶対パスを指定します。
+- `wbs-yyyy-MM-dd.log` に1行1件のJSONで記録します。日付は端末のローカル日付、記録時刻はUTCです。当日を含む直近30日を保持し、起動後の最初の記録と日付切替時に古い該当ログだけを整理します。別名ファイルは削除しません。
+- ファイルログにはWbsApp配下のアプリログと起動・終了ログを記録します。フレームワークのHTTP/SQLログ、例外メッセージは除外し、エラーID・例外型・スタック位置で照合します。アプリからも説明・備考・フォーム全文をログ引数へ渡さないでください。
+- 古いログの削除失敗でも当日の記録を続けます。書き込み失敗はコンソールへ案内し、処理中の元の例外を別のログ例外で置き換えません。ログ保存先自体を作成できない場合は起動できません。
 
 ## 配布・バックアップ
 

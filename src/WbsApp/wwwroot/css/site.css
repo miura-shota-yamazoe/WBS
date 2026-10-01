@@ -1,0 +1,27 @@
+:root { color-scheme: light; font-family: "Yu Gothic UI", "Meiryo", sans-serif; color: #17263c; background: #f3f6fa; }
+* { box-sizing: border-box; }
+body { margin: 0; line-height: 1.7; }
+a { color: #1556a1; text-underline-offset: .2em; }
+a:focus-visible, input:focus-visible, button:focus-visible { outline: 3px solid #dd8e00; outline-offset: 3px; }
+.app-header { background: #173d68; padding: 1rem max(1rem, calc((100% - 1120px) / 2)); }
+.app-header a { color: white; font-weight: 700; font-size: 1.2rem; text-decoration: none; }
+.container { max-width: 1120px; margin: auto; padding: 1.5rem; }
+main { min-height: 60vh; }
+h1 { font-size: 1.7rem; }
+footer { color: #536174; border-top: 1px solid #cbd5e1; }
+.skip-link { position: absolute; left: 1rem; top: -6rem; background: white; padding: .5rem; }
+.skip-link:focus { top: 0; }
+.notification, .error-panel { padding: 1rem; margin-bottom: 1rem; background: white; border: 1px solid #cbd5e1; border-radius: .4rem; }
+.success { border-left: 5px solid #23794a; }
+.error, .error-panel { border-left: 5px solid #ad2434; }
+.field-error, .validation-summary, .required-label { color: #a51d2d; }
+.field-validation-valid, .validation-summary-valid { display: none; }
+.form-field { margin: 1rem 0; }
+.form-field label { font-weight: 700; }
+.required-label { margin-left: .5rem; font-size: .9rem; }
+.text-input { display: block; width: 100%; max-width: 42rem; padding: .65rem; border: 1px solid #718096; border-radius: .25rem; font: inherit; }
+.input-validation-error { border: 2px solid #a51d2d; }
+.field-error { display: block; }
+button { font: inherit; padding: .55rem 1rem; background: #1556a1; color: white; border: 0; border-radius: .25rem; cursor: pointer; }
+button:disabled { opacity: .65; cursor: wait; }
+code { overflow-wrap: anywhere; }

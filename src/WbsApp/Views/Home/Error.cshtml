@@ -1,0 +1,13 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+<section class="error-panel" role="alert">
+    <h1>@Model.Title</h1>
+    <p>@Model.Message</p>
+    @if (Model.ErrorId is not null)
+    {
+        <p>エラーID：<code id="error-id">@Model.ErrorId</code></p>
+    }
+    <a asp-controller="Home" asp-action="Index">ホームへ戻る</a>
+</section>

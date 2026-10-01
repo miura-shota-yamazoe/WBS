@@ -46,6 +46,7 @@ public sealed class IsolatedAppFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Database:Path", DatabasePath);
+        builder.UseSetting("Logging:Directory", Path.GetDirectoryName(DatabasePath));
     }
 
     protected override void Dispose(bool disposing)

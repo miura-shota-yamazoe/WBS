@@ -15,7 +15,11 @@ namespace WbsApp.Tests;
 public sealed class DatabaseStartupTests
 {
     private static WebApplicationFactory<Program> CreateFactory(string path) =>
-        new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder.UseSetting("Database:Path", path));
+        new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("Database:Path", path);
+            builder.UseSetting("Logging:Directory", File.Exists(Path.GetDirectoryName(path)) ? Path.GetDirectoryName(Path.GetDirectoryName(path)) : Path.GetDirectoryName(path));
+        });
 
     [Fact]
     public void DefaultLocation_UsesLocalApplicationData()

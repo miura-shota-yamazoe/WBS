@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - WBSアプリ</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="app-header"><a asp-controller="Home" asp-action="Index">WBSアプリ</a></header>
+    <main id="main-content" class="container">
+        <partial name="_Notifications" />
+        @RenderBody()
+    </main>
+    <footer class="container">ブラウザーを閉じてもアプリは動作を継続します。</footer>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

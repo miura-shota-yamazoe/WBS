@@ -1,0 +1,22 @@
+@model string
+@{
+    var errorId = Html.IdFor(model => model) + "-error";
+    var attributes = new Dictionary<string, object> { ["class"] = "text-input", ["aria-describedby"] = errorId };
+    if (ViewData.ModelMetadata.IsRequired)
+    {
+        attributes["aria-required"] = "true";
+    }
+    if (ViewData.ModelState.TryGetValue(ViewData.TemplateInfo.HtmlFieldPrefix, out var state) && state.Errors.Count > 0)
+    {
+        attributes["aria-invalid"] = "true";
+    }
+}
+<div class="form-field">
+    @Html.LabelFor(model => model)
+    @if (ViewData.ModelMetadata.IsRequired)
+    {
+        <span class="required-label">必須</span>
+    }
+    @Html.TextBoxFor(model => model, attributes)
+    @Html.ValidationMessageFor(model => model, null, new { id = errorId, @class = "field-error" })
+</div>
