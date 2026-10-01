@@ -2,7 +2,7 @@
 
 Windows PC内でプロジェクトと親子タスクを管理する、ASP.NET Core MVC製のWBSアプリです。
 
-現在は **T01：開発構成・依存バージョン・Git準備** が完了した段階です。起動時にはアプリ名のみを表示します。プロジェクト・タスク管理、DB作成・Migration自動適用、exe起動・終了、配布版は後続タスクで実装します。
+現在は **T02：Entity・Enum・DB制約・初期Migration** まで完了しています。Entity・DbContext・InitialCreateは実SQLiteで検証済みです。起動時にはアプリ名のみを表示します。永続DB作成・Migration自動適用はT03、業務画面・exe起動終了・配布版は後続タスクで実装します。
 
 ## 開発環境
 
@@ -27,7 +27,7 @@ Windows PC内でプロジェクトと親子タスクを管理する、ASP.NET Co
 ```text
 WbsApp.sln
 src/WbsApp/          MVCアプリ
-tests/WbsApp.Tests/ Web応答・SQLite接続のスモークテスト
+tests/WbsApp.Tests/ Webスモーク・実SQLiteのMigration/制約テスト
 .config/            ローカルEFツールマニフェスト
 01～08の資料        計画・仕様・設計・タスク進捗
 資料履歴/           統一前の資料（現行実装の参照対象外）
@@ -59,7 +59,7 @@ dotnet run --project src/WbsApp --launch-profile WbsApp
 dotnet run --project src/WbsApp --no-launch-profile -- --urls http://127.0.0.1:5181
 ```
 
-T01時点の終了方法は実行中ターミナルでCtrl+Cです。exeのブラウザー自動起動、多重起動防止、画面からの終了操作はT16で実装します。現段階では永続DBを作成せず、SQLiteスモークテストだけがメモリー内DBを使用します。
+現在の開発時の終了方法は実行中ターミナルでCtrl+Cです。exeのブラウザー自動起動、多重起動防止、画面からの終了操作はT16で実装します。現段階では永続DBを作成せず、SQLite接続・Migration・制約のテストはメモリー内DBを使用します。
 
 ## 資料と進捗管理
 
@@ -73,6 +73,12 @@ T01時点の終了方法は実行中ターミナルでCtrl+Cです。exeのブ�
 - [開発タスク進捗（タスク管理の正本）](08_開発タスク進捗.md)
 
 作業開始・完了・保留時には開発タスク進捗を更新します。ユーザーデータ、ログ、個人設定をコミットしないでください。
+
+## データモデルとMigration
+
+モデルは `src/WbsApp/Models`、EF設定は `src/WbsApp/Data/Configurations`、初期Migrationは `src/WbsApp/Data/Migrations` にあります。
+
+T02のデザイン時FactoryはMigration生成用のメモリー内接続です。現時点で `dotnet ef database update` を実行しても永続DBの初期化にはなりません。実際の保存先と起動時適用はT03で接続します。テストは `EnsureCreated` ではなく実際のMigrationを使用します。
 
 ## 配布・バックアップ
 
