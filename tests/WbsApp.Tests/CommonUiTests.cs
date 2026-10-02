@@ -120,7 +120,7 @@ public sealed class CommonUiTests : IClassFixture<CommonUiFactory>
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var html = await response.Content.ReadAsStringAsync();
             Assert.Contains("処理を完了できませんでした", WebUtility.HtmlDecode(html));
-            Assert.Contains("ホームへ戻る", WebUtility.HtmlDecode(html));
+            Assert.Contains("プロジェクト一覧へ戻る", WebUtility.HtmlDecode(html));
             var id = Regex.Match(html, "id=\"error-id\">([a-f0-9]{32})</code>").Groups[1].Value;
             Assert.Equal(32, id.Length);
             Assert.DoesNotContain("private-exception-content", html);

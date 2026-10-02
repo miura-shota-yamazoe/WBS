@@ -10,6 +10,24 @@ namespace WbsApp.Services;
 
 public sealed class ProjectService(AppDbContext db, TimeProvider clock)
 {
+    public async Task<ProjectList> SearchAsync(ProjectSearch search, CancellationToken cancellationToken = default)
+    {
+        if (search.Status.HasValue && !Enum.IsDefined(search.Status.Value))
+            throw new ValidationException("状態はすべて・進行中・完了から選択してください。");
+        search.Name = search.Name?.Trim();
+        var query = db.Projects.AsNoTracking();
+        if (!string.IsNullOrEmpty(search.Name)) query = query.Where(value => value.Name.Contains(search.Name));
+        if (search.Status.HasValue) query = query.Where(value => value.Status == search.Status.Value);
+        var count = await query.CountAsync(cancellationToken);
+        var pageCount = Math.Max(1, (count - 1) / 100 + 1);
+        search.Page = Math.Clamp(search.Page, 1, pageCount);
+        var items = await query.OrderByDescending(value => value.UpdatedAt).ThenBy(value => value.ProjectId)
+            .Skip((search.Page - 1) * 100).Take(100)
+            .Select(value => new ProjectListItem(value.ProjectId, value.Name, value.StartDate, value.EndDate, value.Status, value.UpdatedAt))
+            .ToListAsync(cancellationToken);
+        return new ProjectList { Search = search, Items = items, TotalCount = count };
+    }
+
     public async Task<ProjectForm?> FindAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var project = await db.Projects.AsNoTracking().SingleOrDefaultAsync(value => value.ProjectId == id, cancellationToken);

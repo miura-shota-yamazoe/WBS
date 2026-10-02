@@ -9,6 +9,20 @@ namespace WbsApp.Controllers;
 [Route("Projects")]
 public sealed class ProjectsController(ProjectService service, ILogger<ProjectsController> logger) : Controller
 {
+    [HttpGet("")]
+    public async Task<IActionResult> Index([FromQuery] ProjectSearch search, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            Response.StatusCode = StatusCodes.Status400BadRequest;
+            return View(new ProjectList { Search = search });
+        }
+        var result = await service.SearchAsync(search, cancellationToken);
+        // Render the normalized filters and clamped page rather than old query values.
+        ModelState.Clear();
+        return View(result);
+    }
+
     [HttpGet("Create")]
     public IActionResult Create() => Form(new ProjectForm { Status = WbsApp.Models.Enums.ProjectStatus.InProgress });
 
@@ -18,9 +32,9 @@ public sealed class ProjectsController(ProjectService service, ILogger<ProjectsC
         if (!ModelState.IsValid) return Form(input);
         try
         {
-            var id = await service.CreateAsync(input, cancellationToken);
+            await service.CreateAsync(input, cancellationToken);
             TempData["SuccessMessage"] = "プロジェクトを登録しました。";
-            return RedirectToAction(nameof(Edit), new { id });
+            return RedirectToAction(nameof(Index));
         }
         catch (ValidationException exception) { ModelState.AddModelError("", exception.Message); }
         catch (DbUpdateException exception) { AddSaveError(exception); }
@@ -48,7 +62,7 @@ public sealed class ProjectsController(ProjectService service, ILogger<ProjectsC
                 return Form(input, id);
             }
             TempData["SuccessMessage"] = "プロジェクトを保存しました。";
-            return RedirectToAction(nameof(Edit), new { id });
+            return RedirectToAction(nameof(Index));
         }
         catch (ValidationException exception) { ModelState.AddModelError("", exception.Message); }
         catch (DbUpdateException exception) { AddSaveError(exception); }

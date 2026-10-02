@@ -6,7 +6,7 @@ namespace WbsApp.Controllers;
 
 public sealed class HomeController(ILogger<HomeController> logger) : Controller
 {
-    public IActionResult Index() => View();
+    public IActionResult Index() => RedirectToAction("Index", "Projects");
 
     [IgnoreAntiforgeryToken]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

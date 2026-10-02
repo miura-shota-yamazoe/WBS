@@ -25,3 +25,16 @@ footer { color: #536174; border-top: 1px solid #cbd5e1; }
 button { font: inherit; padding: .55rem 1rem; background: #1556a1; color: white; border: 0; border-radius: .25rem; cursor: pointer; }
 button:disabled { opacity: .65; cursor: wait; }
 code { overflow-wrap: anywhere; }
+.app-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.page-heading, .search-form, .form-actions, .pagination { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.page-heading { justify-content: space-between; }
+.search-form { align-items: end; margin: 1rem 0 1.5rem; }
+.search-form .text-input { min-width: 10rem; }
+.button-link { display: inline-block; padding: .55rem 1rem; background: #1556a1; color: white; border-radius: .25rem; text-decoration: none; }
+.table-scroll { overflow-x: auto; background: white; border: 1px solid #cbd5e1; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: .7rem; text-align: left; border-bottom: 1px solid #d8e0ea; }
+th { background: #e5edf6; }
+td:not(.project-name) { white-space: nowrap; }
+.project-name { min-width: 12rem; max-width: 28rem; overflow-wrap: anywhere; }
+.pagination { margin-top: 1rem; }

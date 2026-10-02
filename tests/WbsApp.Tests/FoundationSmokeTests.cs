@@ -24,7 +24,7 @@ public sealed class FoundationSmokeTests : IClassFixture<IsolatedAppFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
         Assert.Contains("lang=\"ja\"", html);
-        Assert.Contains("<h1>WBSアプリ</h1>", html);
+        Assert.Contains("<h1>プロジェクト一覧</h1>", html);
     }
 
     [Fact]

@@ -1,0 +1,59 @@
+@model ProjectList
+@using WbsApp.Models.Enums
+@{
+    ViewData["Title"] = "プロジェクト一覧";
+}
+<div class="page-heading"><h1>プロジェクト一覧</h1><a class="button-link" asp-action="Create">新規プロジェクト</a></div>
+<form asp-action="Index" method="get" class="search-form">
+    <div><label for="Name">名前</label><input id="Name" name="Name" value="@Model.Search.Name" class="text-input" /></div>
+    <div><label for="Status">状態</label>
+        <select id="Status" name="Status" class="text-input">
+            <option value="" selected="@(!Model.Search.Status.HasValue)">すべて</option>
+            <option value="0" selected="@(Model.Search.Status == ProjectStatus.InProgress)">進行中</option>
+            <option value="1" selected="@(Model.Search.Status == ProjectStatus.Completed)">完了</option>
+        </select>
+    </div>
+    <button type="submit">検索</button><a asp-action="Index">解除</a>
+</form>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+}
+else if (Model.Items.Count == 0)
+{
+    <p role="status">@(Model.IsFiltered ? "条件に一致するプロジェクトがありません" : "プロジェクトを登録してください")</p>
+    @if (Model.IsFiltered) { <a asp-action="Index">検索条件を解除</a> }
+    else { <a asp-action="Create">新規プロジェクト</a> }
+}
+else
+{
+    <p>該当 @Model.TotalCount 件</p>
+    <div class="table-scroll" role="region" aria-label="プロジェクト一覧表" tabindex="0">
+    <table>
+        <thead><tr><th scope="col">名前</th><th scope="col">予定期間</th><th scope="col">状態</th><th scope="col">更新日時</th><th scope="col">操作</th></tr></thead>
+        <tbody>
+        @foreach (var project in Model.Items)
+        {
+            <tr data-project-id="@project.ProjectId">
+                <td class="project-name">@project.Name</td>
+                <td>@project.StartDate.ToString("yyyy-MM-dd") ～ @project.EndDate.ToString("yyyy-MM-dd")</td>
+                <td>@(project.Status == ProjectStatus.Completed ? "完了" : "進行中")</td>
+                <td><time datetime="@project.UpdatedAt.ToString("O")">@project.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</time></td>
+                <td><a asp-action="Edit" asp-route-id="@project.ProjectId" aria-label="@(project.Name + "を編集")">編集</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+    <nav class="pagination" aria-label="ページ切替">
+        @if (Model.Search.Page > 1)
+        {
+            <a asp-action="Index" asp-route-Name="@Model.Search.Name" asp-route-Status="@((int?)Model.Search.Status)" asp-route-Page="@(Model.Search.Page - 1)" rel="prev">前へ</a>
+        }
+        <span aria-current="page">@Model.Search.Page / @Model.PageCount ページ</span>
+        @if (Model.Search.Page < Model.PageCount)
+        {
+            <a asp-action="Index" asp-route-Name="@Model.Search.Name" asp-route-Status="@((int?)Model.Search.Status)" asp-route-Page="@(Model.Search.Page + 1)" rel="next">次へ</a>
+        }
+    </nav>
+}

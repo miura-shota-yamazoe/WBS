@@ -70,10 +70,10 @@ public sealed class ProjectFormTests
         Assert.Equal(DateTimeKind.Utc, project.CreatedAt.Kind);
         Assert.Equal(project.CreatedAt, project.UpdatedAt);
         Assert.True(project.CreatedAt.Year > 1900);
-        Assert.EndsWith($"/Projects/{project.ProjectId}/Edit", response.Headers.Location!.ToString());
+        Assert.Equal("/Projects", response.Headers.Location!.ToString());
         var html = WebUtility.HtmlDecode(await client.GetStringAsync(response.Headers.Location));
         Assert.Contains("プロジェクトを登録しました。", html);
-        Assert.Contains("プロジェクト編集", html);
+        Assert.Contains("プロジェクト一覧", html);
     }
 
     [Theory]
@@ -147,7 +147,7 @@ public sealed class ProjectFormTests
         using var client = app.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         using var create = await PostAsync(client, "/Projects/Create", ValidInput());
         var before = Assert.Single(await ProjectsAsync(app));
-        var path = create.Headers.Location!.ToString();
+        var path = $"/Projects/{before.ProjectId}/Edit";
         var invalid = ValidInput(); invalid["Name"] = "変更する名前"; invalid["EndDate"] = "2026-09-30";
         using var rejected = await PostAsync(client, path, invalid);
         Assert.Equal(HttpStatusCode.OK, rejected.StatusCode);
@@ -227,7 +227,8 @@ public sealed class ProjectFormTests
         using var client = app.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         var fields = ValidInput(); fields["Name"] = "<script>名前</script>"; fields["Description"] = "</textarea><script>alert(1)</script>";
         using var saved = await PostAsync(client, "/Projects/Create", fields);
-        var html = await client.GetStringAsync(saved.Headers.Location);
+        var project = Assert.Single(await ProjectsAsync(app));
+        var html = await client.GetStringAsync($"/Projects/{project.ProjectId}/Edit");
         Assert.Contains("&lt;script&gt;", html); Assert.DoesNotContain("<script>名前", html);
         Assert.DoesNotContain("</textarea><script>alert", html);
     }
