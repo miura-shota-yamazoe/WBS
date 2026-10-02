@@ -2,7 +2,7 @@
 @{ ViewData["Title"] = Model.TaskId.HasValue ? "タスク編集" : "タスク登録"; }
 <h1>@ViewData["Title"]</h1>
 <p>プロジェクト：@Model.ProjectName</p>
-<form asp-controller="Tasks" asp-action="@(Model.TaskId.HasValue ? "Edit" : "Create")" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@Model.TaskId" method="post" data-save-form>
+<form asp-controller="Tasks" asp-action="@(Model.TaskId.HasValue ? "Edit" : "Create")" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@Model.TaskId" method="post" data-save-form data-was-completed="@(Model.WasCompleted ? "true" : "false")">
     <partial name="_FormErrors" />
     <div class="form-field">
         <label asp-for="ParentTaskId"></label>
@@ -29,7 +29,8 @@
         <label asp-for="Progress"></label><span class="required-label">必須</span>
         <input asp-for="Progress" type="number" min="0" max="100" step="1" class="text-input" required aria-describedby="Progress-error" />
         <span asp-validation-for="Progress" class="field-error" id="Progress-error"></span>
-        <p>完了は進捗率100%、それ以外は0～99%で入力してください。</p>
+        <p>完了を選ぶと100%、100%を入力すると完了になります。完了から再開するにはステータスと進捗率の両方を変更してください。ステータスが完了のまま保存すると、進捗率は100%に戻ります。</p>
+        <p data-progress-message role="status"></p>
     </div>
     <div class="form-field">
         <label asp-for="Status"></label><span class="required-label">必須</span>
@@ -52,4 +53,7 @@
     <div class="form-actions"><button type="submit">@(Model.TaskId.HasValue ? "保存" : "登録")</button>
         <a asp-action="Index" asp-route-projectId="@Model.ProjectId">キャンセル</a><span data-save-status role="status"></span></div>
 </form>
-@section Scripts { <script src="~/js/project-form.js" asp-append-version="true" defer></script> }
+@section Scripts {
+    <script src="~/js/task-progress.js" asp-append-version="true" defer></script>
+    <script src="~/js/project-form.js" asp-append-version="true" defer></script>
+}

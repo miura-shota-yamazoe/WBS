@@ -36,6 +36,7 @@ public sealed class TaskForm : IValidatableObject
 
     [BindNever, ValidateNever] public Guid ProjectId { get; set; }
     [BindNever, ValidateNever] public Guid? TaskId { get; set; }
+    [BindNever, ValidateNever] public bool WasCompleted { get; set; }
     [BindNever, ValidateNever] public string ProjectName { get; set; } = "";
     [BindNever, ValidateNever] public IReadOnlyList<TaskLink> ParentOptions { get; set; } = [];
 
@@ -43,10 +44,9 @@ public sealed class TaskForm : IValidatableObject
     {
         if (StartDate.HasValue && EndDate.HasValue && EndDate < StartDate)
             yield return new ValidationResult("終了予定日は開始予定日以降にしてください。", [nameof(EndDate)]);
-        if (Progress.HasValue && Status.HasValue && (Progress == 100) != (Status == TaskStatus.Completed))
-            yield return new ValidationResult("完了は進捗率100%、それ以外は0～99%で入力してください。", [nameof(Progress)]);
     }
 }
 
 public sealed record TaskLink(Guid TaskId, string Name);
-public sealed record TaskList(Guid ProjectId, string ProjectName, IReadOnlyList<TaskLink> Tasks);
+public sealed record TaskListRow(Guid TaskId, string Name, int Progress, TaskStatus Status, DateOnly EndDate, bool IsDelayed);
+public sealed record TaskList(Guid ProjectId, string ProjectName, IReadOnlyList<TaskListRow> Tasks);

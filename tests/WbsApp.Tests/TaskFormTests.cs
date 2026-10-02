@@ -14,6 +14,41 @@ namespace WbsApp.Tests;
 
 public sealed class TaskFormTests
 {
+    [Fact]
+    public async Task CompletionAndReopening_WorkWithoutJavaScriptAndRetainErrors()
+    {
+        await using var app = new IsolatedAppFactory(); var projectId = await TaskServiceTests.SeedProjectAsync(app);
+        using var client = app.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var path = $"/Projects/{projectId}/Tasks/Create";
+        var fields = Fields(); fields["Progress"] = "100";
+        using var created = await PostAsync(client, path, fields);
+        Assert.Equal(HttpStatusCode.Redirect, created.StatusCode);
+        Guid id;
+        await using (var scope = app.Services.CreateAsyncScope())
+        {
+            var task = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Tasks.AsNoTracking().SingleAsync();
+            id = task.TaskId; Assert.Equal(3, (int)task.Status);
+        }
+        var edit = $"/Projects/{projectId}/Tasks/{id}/Edit";
+        fields["WasCompleted"] = "false";
+        using var invalid = await PostAsync(client, edit, fields);
+        var html = WebUtility.HtmlDecode(await invalid.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.OK, invalid.StatusCode);
+        Assert.Contains("完了から再開するには", html);
+        Assert.Contains("data-was-completed=\"true\"", html);
+        Assert.Contains("value=\"1\" selected=\"selected\">作業中", html);
+        Assert.Contains("value=\"100\"", html);
+        fields["Progress"] = "50";
+        using var reopened = await PostAsync(client, edit, fields);
+        Assert.Equal(HttpStatusCode.Redirect, reopened.StatusCode);
+        fields["Status"] = "3"; fields["Progress"] = "25";
+        using var completed = await PostAsync(client, edit, fields);
+        Assert.Equal(HttpStatusCode.Redirect, completed.StatusCode);
+        await using var finalScope = app.Services.CreateAsyncScope();
+        var saved = await finalScope.ServiceProvider.GetRequiredService<AppDbContext>().Tasks.AsNoTracking().SingleAsync();
+        Assert.Equal(100, saved.Progress); Assert.Equal(3, (int)saved.Status);
+    }
+
     private static Dictionary<string, string> Fields() => new()
     {
         ["Name"] = " 作業 ", ["AssigneeName"] = " 担当者 ", ["StartDate"] = "2026-10-02",

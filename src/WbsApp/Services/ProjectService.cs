@@ -8,7 +8,7 @@ using TaskStatus = WbsApp.Models.Enums.TaskStatus;
 
 namespace WbsApp.Services;
 
-public sealed class ProjectService(AppDbContext db, TimeProvider clock)
+public sealed class ProjectService(AppDbContext db, WbsApp.Infrastructure.Clock.AppClock clock)
 {
     public async Task<ProjectList> SearchAsync(ProjectSearch search, CancellationToken cancellationToken = default)
     {
@@ -41,7 +41,7 @@ public sealed class ProjectService(AppDbContext db, TimeProvider clock)
     public async Task<Guid> CreateAsync(ProjectForm input, CancellationToken cancellationToken = default)
     {
         Validate(input);
-        var now = clock.GetUtcNow().UtcDateTime;
+        var now = clock.UtcNow;
         var project = new Project { Name = input.Name!, CreatedAt = now, UpdatedAt = now };
         Apply(project, input);
         db.Projects.Add(project);
@@ -63,7 +63,7 @@ public sealed class ProjectService(AppDbContext db, TimeProvider clock)
             (value.StartDate < input.StartDate!.Value || value.EndDate > input.EndDate!.Value), cancellationToken))
             throw new ValidationException("期間外になるタスクがあります。期間の変更には確認が必要です。");
         Apply(project, input);
-        var now = clock.GetUtcNow().UtcDateTime;
+        var now = clock.UtcNow;
         project.UpdatedAt = now > project.UpdatedAt ? now : project.UpdatedAt.AddTicks(1);
         try { await db.SaveChangesAsync(cancellationToken); }
         catch (DbUpdateConcurrencyException) { return false; }

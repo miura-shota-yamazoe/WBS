@@ -14,6 +14,7 @@ builder.Services.AddControllersWithViews(options =>
     options.ModelBindingMessageProvider.SetUnknownValueIsInvalidAccessor(field => $"{field}の入力形式を確認してください。");
 });
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<WbsApp.Infrastructure.Clock.AppClock>();
 builder.Services.AddSingleton<ILoggerProvider, DailyFileLoggerProvider>();
 builder.Services.AddSingleton<DatabaseLocation>();
 builder.Services.AddDbContext<AppDbContext>((services, options) =>

@@ -79,7 +79,6 @@ public sealed class TaskServiceTests
     [Theory]
     [InlineData("name")] [InlineData("assignee")] [InlineData("memo")] [InlineData("date")]
     [InlineData("progress-low")] [InlineData("progress-high")] [InlineData("status")] [InlineData("priority")]
-    [InlineData("completed")] [InlineData("hundred")]
     public async Task InvalidInput_IsRejectedWithoutChangingDatabase(string invalid)
     {
         await using var app = new IsolatedAppFactory(); var projectId = await SeedProjectAsync(app);
@@ -95,8 +94,6 @@ public sealed class TaskServiceTests
             case "progress-high": input.Progress = 101; break;
             case "status": input.Status = (TaskStatus)99; break;
             case "priority": input.Priority = (TaskPriority)99; break;
-            case "completed": input.Status = TaskStatus.Completed; break;
-            case "hundred": input.Progress = 100; break;
         }
         await Assert.ThrowsAsync<ValidationException>(() => service.CreateAsync(projectId, input));
         Assert.Empty(await scope.ServiceProvider.GetRequiredService<AppDbContext>().Tasks.AsNoTracking().ToArrayAsync());

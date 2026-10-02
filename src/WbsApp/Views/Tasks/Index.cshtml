@@ -9,6 +9,10 @@ else
     @foreach (var task in Model.Tasks)
     {
         <li data-task-id="@task.TaskId"><span>@task.Name</span>
+        <span>@task.Progress%</span>
+        <span>@(task.Status switch { WbsApp.Models.Enums.TaskStatus.NotStarted => "未着手", WbsApp.Models.Enums.TaskStatus.InProgress => "作業中", WbsApp.Models.Enums.TaskStatus.InReview => "レビュー中", _ => "完了" })</span>
+        <span>期限：@task.EndDate.ToString("yyyy-MM-dd")</span>
+        @if (task.IsDelayed) { <strong class="field-error">遅延</strong> }
         <a asp-action="Edit" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@task.TaskId" aria-label="@(task.Name + "を編集")">編集</a>
         <a asp-action="Create" asp-route-projectId="@Model.ProjectId" asp-route-parentId="@task.TaskId" aria-label="@(task.Name + "に子タスクを追加")">子タスク追加</a></li>
     }
