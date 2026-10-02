@@ -42,14 +42,14 @@ public sealed class ProjectsController(ProjectService service, ILogger<ProjectsC
     }
 
     [HttpGet("{id:guid}/Edit")]
-    public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Edit([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var input = await service.FindAsync(id, cancellationToken);
         return input is null ? NotFound() : Form(input, id);
     }
 
     [HttpPost("{id:guid}/Edit")]
-    public async Task<IActionResult> Edit(Guid id, ProjectForm input, CancellationToken cancellationToken)
+    public async Task<IActionResult> Edit([FromRoute] Guid id, ProjectForm input, CancellationToken cancellationToken)
     {
         if (await service.FindAsync(id, cancellationToken) is null) return NotFound();
         if (!ModelState.IsValid) return Form(input, id);

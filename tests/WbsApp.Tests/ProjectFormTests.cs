@@ -212,6 +212,24 @@ public sealed class ProjectFormTests
         Assert.Contains(id, string.Join("\n", logs));
     }
 
+    [Fact]
+    public async Task EditUsesUrlIdEvenWhenPostedIdTargetsAnotherProject()
+    {
+        await using var app = new IsolatedAppFactory();
+        using var client = app.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var firstCreate = await PostAsync(client, "/Projects/Create", ValidInput());
+        var first = Assert.Single(await ProjectsAsync(app));
+        var other = ValidInput(); other["Name"] = "別のプロジェクト";
+        using var otherCreate = await PostAsync(client, "/Projects/Create", other);
+        var second = (await ProjectsAsync(app)).Single(value => value.ProjectId != first.ProjectId);
+        var fields = ValidInput(); fields["Name"] = "URLの対象を更新"; fields["id"] = second.ProjectId.ToString();
+        using var saved = await PostAsync(client, $"/Projects/{first.ProjectId}/Edit", fields);
+        Assert.Equal(HttpStatusCode.Redirect, saved.StatusCode);
+        var projects = await ProjectsAsync(app);
+        Assert.Equal("URLの対象を更新", projects.Single(value => value.ProjectId == first.ProjectId).Name);
+        Assert.Equal("別のプロジェクト", projects.Single(value => value.ProjectId == second.ProjectId).Name);
+    }
+
     private sealed class FailedSaveInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesInterceptor
     {
         public override ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>> SavingChangesAsync(

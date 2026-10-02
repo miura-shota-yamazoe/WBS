@@ -20,6 +20,7 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
     options.UseSqlite(services.GetRequiredService<DatabaseLocation>().ConnectionString));
 builder.Services.AddScoped<DatabaseInitializer>();
 builder.Services.AddScoped<WbsApp.Services.ProjectService>();
+builder.Services.AddScoped<WbsApp.Services.TaskService>();
 
 var app = builder.Build();
 

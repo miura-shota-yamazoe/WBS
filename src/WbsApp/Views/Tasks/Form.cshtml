@@ -1,0 +1,55 @@
+@model TaskForm
+@{ ViewData["Title"] = Model.TaskId.HasValue ? "タスク編集" : "タスク登録"; }
+<h1>@ViewData["Title"]</h1>
+<p>プロジェクト：@Model.ProjectName</p>
+<form asp-controller="Tasks" asp-action="@(Model.TaskId.HasValue ? "Edit" : "Create")" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@Model.TaskId" method="post" data-save-form>
+    <partial name="_FormErrors" />
+    <div class="form-field">
+        <label asp-for="ParentTaskId"></label>
+        <select asp-for="ParentTaskId" class="text-input" disabled="@(Model.TaskId.HasValue)" aria-describedby="ParentTaskId-error">
+            <option value="">ルート（親なし）</option>
+            @foreach (var parent in Model.ParentOptions) { <option value="@parent.TaskId">@parent.Name</option> }
+        </select>
+        @if (Model.TaskId.HasValue) { <input asp-for="ParentTaskId" type="hidden" /> }
+        <span asp-validation-for="ParentTaskId" class="field-error" id="ParentTaskId-error"></span>
+    </div>
+    @Html.EditorFor(model => model.Name)
+    @Html.EditorFor(model => model.AssigneeName)
+    <div class="form-field">
+        <label asp-for="StartDate"></label><span class="required-label">必須</span>
+        <input asp-for="StartDate" type="date" asp-format="{0:yyyy-MM-dd}" class="text-input" required aria-describedby="StartDate-error" />
+        <span asp-validation-for="StartDate" class="field-error" id="StartDate-error"></span>
+    </div>
+    <div class="form-field">
+        <label asp-for="EndDate"></label><span class="required-label">必須</span>
+        <input asp-for="EndDate" type="date" asp-format="{0:yyyy-MM-dd}" class="text-input" required aria-describedby="EndDate-error" />
+        <span asp-validation-for="EndDate" class="field-error" id="EndDate-error"></span>
+    </div>
+    <div class="form-field">
+        <label asp-for="Progress"></label><span class="required-label">必須</span>
+        <input asp-for="Progress" type="number" min="0" max="100" step="1" class="text-input" required aria-describedby="Progress-error" />
+        <span asp-validation-for="Progress" class="field-error" id="Progress-error"></span>
+        <p>完了は進捗率100%、それ以外は0～99%で入力してください。</p>
+    </div>
+    <div class="form-field">
+        <label asp-for="Status"></label><span class="required-label">必須</span>
+        <select asp-for="Status" class="text-input" required aria-describedby="Status-error">
+            <option value="">選択してください</option><option value="0">未着手</option><option value="1">作業中</option><option value="2">レビュー中</option><option value="3">完了</option>
+        </select>
+        <span asp-validation-for="Status" class="field-error" id="Status-error"></span>
+    </div>
+    <div class="form-field">
+        <label asp-for="Priority"></label><span class="required-label">必須</span>
+        <select asp-for="Priority" class="text-input" required aria-describedby="Priority-error">
+            <option value="">選択してください</option><option value="0">高</option><option value="1">中</option><option value="2">低</option>
+        </select>
+        <span asp-validation-for="Priority" class="field-error" id="Priority-error"></span>
+    </div>
+    <div class="form-field">
+        <label asp-for="Memo"></label><textarea asp-for="Memo" rows="5" class="text-input" aria-describedby="Memo-error"></textarea>
+        <span asp-validation-for="Memo" class="field-error" id="Memo-error"></span>
+    </div>
+    <div class="form-actions"><button type="submit">@(Model.TaskId.HasValue ? "保存" : "登録")</button>
+        <a asp-action="Index" asp-route-projectId="@Model.ProjectId">キャンセル</a><span data-save-status role="status"></span></div>
+</form>
+@section Scripts { <script src="~/js/project-form.js" asp-append-version="true" defer></script> }

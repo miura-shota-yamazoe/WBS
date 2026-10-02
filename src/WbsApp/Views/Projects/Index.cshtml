@@ -39,7 +39,7 @@ else
                 <td>@project.StartDate.ToString("yyyy-MM-dd") ～ @project.EndDate.ToString("yyyy-MM-dd")</td>
                 <td>@(project.Status == ProjectStatus.Completed ? "完了" : "進行中")</td>
                 <td><time datetime="@project.UpdatedAt.ToString("O")">@project.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</time></td>
-                <td><a asp-action="Edit" asp-route-id="@project.ProjectId" aria-label="@(project.Name + "を編集")">編集</a></td>
+                <td><a asp-action="Edit" asp-route-id="@project.ProjectId" aria-label="@(project.Name + "を編集")">編集</a> <a asp-controller="Tasks" asp-action="Index" asp-route-projectId="@project.ProjectId" aria-label="@(project.Name + "のタスク")">タスク</a></td>
             </tr>
         }
         </tbody>

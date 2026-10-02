@@ -1,0 +1,17 @@
+@model TaskList
+@{ ViewData["Title"] = "タスク"; }
+<div class="page-heading"><h1>@Model.ProjectName のタスク</h1>
+<a class="button-link" asp-action="Create" asp-route-projectId="@Model.ProjectId">新規タスク</a></div>
+@if (Model.Tasks.Count == 0) { <p role="status">タスクを登録してください。</p> }
+else
+{
+    <ul class="task-links">
+    @foreach (var task in Model.Tasks)
+    {
+        <li data-task-id="@task.TaskId"><span>@task.Name</span>
+        <a asp-action="Edit" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@task.TaskId" aria-label="@(task.Name + "を編集")">編集</a>
+        <a asp-action="Create" asp-route-projectId="@Model.ProjectId" asp-route-parentId="@task.TaskId" aria-label="@(task.Name + "に子タスクを追加")">子タスク追加</a></li>
+    }
+    </ul>
+}
+<a asp-controller="Projects" asp-action="Index">プロジェクト一覧へ戻る</a>

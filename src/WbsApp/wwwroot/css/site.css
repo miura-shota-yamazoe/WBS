@@ -38,3 +38,7 @@ th { background: #e5edf6; }
 td:not(.project-name) { white-space: nowrap; }
 .project-name { min-width: 12rem; max-width: 28rem; overflow-wrap: anywhere; }
 .pagination { margin-top: 1rem; }
+
+.task-links { list-style: none; padding: 0; }
+.task-links li { display: flex; gap: 1rem; flex-wrap: wrap; padding: .8rem; background: white; border-bottom: 1px solid #cbd5e1; }
+.task-links span { flex: 1; min-width: 12rem; overflow-wrap: anywhere; }
