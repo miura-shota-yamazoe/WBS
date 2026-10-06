@@ -13,14 +13,19 @@ public sealed class TaskService(AppDbContext db, AppClock clock)
 {
     public async Task<TaskList?> ListAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
-        var name = await db.Projects.Where(value => value.ProjectId == projectId).Select(value => value.Name).SingleOrDefaultAsync(cancellationToken);
-        if (name is null) return null;
+        var project = await db.Projects.AsNoTracking().Where(value => value.ProjectId == projectId)
+            .Select(value => new { value.Name, value.StartDate, value.EndDate, value.Status })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (project is null) return null;
         var tasks = await db.Tasks.AsNoTracking().Where(value => value.ProjectId == projectId)
-            .OrderBy(value => value.CreatedAt).ThenBy(value => value.TaskId)
-            .Select(value => new { value.TaskId, value.Name, value.Progress, value.Status, value.EndDate }).ToListAsync(cancellationToken);
-        var today = clock.Today;
-        return new TaskList(projectId, name, tasks.Select(value => new TaskListRow(value.TaskId, value.Name,
-            value.Progress, value.Status, value.EndDate, TaskProgressRules.IsDelayed(value.EndDate, value.Status, today))).ToArray());
+            .Select(value => new TaskTreeSource(value.ProjectId, value.TaskId, value.ParentTaskId, value.SortOrder,
+                value.Name, value.AssigneeName, value.StartDate, value.EndDate, value.Progress, value.Status, value.Priority))
+            .ToListAsync(cancellationToken);
+        var rows = TaskTreeBuilder.Build(tasks, clock.Today);
+        var progress = ProjectProgressCalculator.Calculate(tasks.Select(value =>
+            new TaskProgressSource(value.ProjectId, value.TaskId, value.ParentTaskId, value.Progress)));
+        return new TaskList(projectId, project.Name, project.StartDate, project.EndDate,
+            project.Status, progress, rows);
     }
 
     public async Task<TaskForm?> FormAsync(Guid projectId, Guid? taskId = null, TaskForm? input = null,

@@ -14,7 +14,7 @@ public sealed class ProjectSearch
 }
 
 public sealed record ProjectListItem(Guid ProjectId, string Name, DateOnly StartDate, DateOnly EndDate,
-    ProjectStatus Status, DateTime UpdatedAt);
+    ProjectStatus Status, DateTime UpdatedAt, decimal? Progress = null);
 
 public sealed class ProjectList
 {

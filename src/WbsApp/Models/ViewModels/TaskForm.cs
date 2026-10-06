@@ -48,5 +48,8 @@ public sealed class TaskForm : IValidatableObject
 }
 
 public sealed record TaskLink(Guid TaskId, string Name);
-public sealed record TaskListRow(Guid TaskId, string Name, int Progress, TaskStatus Status, DateOnly EndDate, bool IsDelayed);
-public sealed record TaskList(Guid ProjectId, string ProjectName, IReadOnlyList<TaskListRow> Tasks);
+public sealed record TaskListRow(Guid TaskId, string Name, string? AssigneeName, DateOnly StartDate,
+    DateOnly EndDate, int Progress, TaskStatus Status, TaskPriority Priority, string WbsNumber,
+    int Depth, bool IsLeaf, bool IsDelayed);
+public sealed record TaskList(Guid ProjectId, string ProjectName, DateOnly StartDate, DateOnly EndDate,
+    ProjectStatus Status, decimal? Progress, IReadOnlyList<TaskListRow> Tasks);

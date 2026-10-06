@@ -42,3 +42,6 @@ td:not(.project-name) { white-space: nowrap; }
 .task-links { list-style: none; padding: 0; }
 .task-links li { display: flex; gap: 1rem; flex-wrap: wrap; padding: .8rem; background: white; border-bottom: 1px solid #cbd5e1; }
 .task-links span { flex: 1; min-width: 12rem; overflow-wrap: anywhere; }
+.task-links li { width: max-content; min-width: 100%; padding-inline-start: calc(.8rem + var(--depth) * 1.5rem); }
+.task-links .wbs-number { flex: 0 0 auto; min-width: max-content; font-weight: 700; }
+.task-links .task-name { font-weight: 600; }

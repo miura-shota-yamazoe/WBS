@@ -25,6 +25,19 @@ public sealed class ProjectService(AppDbContext db, WbsApp.Infrastructure.Clock.
             .Skip((search.Page - 1) * 100).Take(100)
             .Select(value => new ProjectListItem(value.ProjectId, value.Name, value.StartDate, value.EndDate, value.Status, value.UpdatedAt))
             .ToListAsync(cancellationToken);
+        if (items.Count > 0)
+        {
+            var projectIds = items.Select(value => value.ProjectId).ToArray();
+            var taskProgress = await db.Tasks.AsNoTracking().Where(value => projectIds.Contains(value.ProjectId))
+                .Select(value => new TaskProgressSource(value.ProjectId, value.TaskId, value.ParentTaskId, value.Progress))
+                .ToListAsync(cancellationToken);
+            var byProject = taskProgress.GroupBy(value => value.ProjectId)
+                .ToDictionary(group => group.Key, group => ProjectProgressCalculator.Calculate(group));
+            items = items.Select(value => value with
+            {
+                Progress = byProject.GetValueOrDefault(value.ProjectId)
+            }).ToList();
+        }
         return new ProjectList { Search = search, Items = items, TotalCount = count };
     }
 

@@ -1,14 +1,18 @@
 @model TaskList
+@using System.Globalization
 @{ ViewData["Title"] = "タスク"; }
 <div class="page-heading"><h1>@Model.ProjectName のタスク</h1>
 <a class="button-link" asp-action="Create" asp-route-projectId="@Model.ProjectId">新規タスク</a></div>
-@if (Model.Tasks.Count == 0) { <p role="status">タスクを登録してください。</p> }
+<p>予定期間：@Model.StartDate.ToString("yyyy-MM-dd") ～ @Model.EndDate.ToString("yyyy-MM-dd") ／ 状態：@(Model.Status == WbsApp.Models.Enums.ProjectStatus.Completed ? "完了" : "進行中") ／ プロジェクト進捗：@(Model.Progress.HasValue ? Model.Progress.Value.ToString("F1", CultureInfo.InvariantCulture) + "%" : "—")</p>
+@if (Model.Tasks.Count == 0) { <p role="status">タスクを登録してください。プロジェクト進捗：タスク未登録</p> }
 else
 {
+    <div class="table-scroll" role="region" aria-label="WBSタスク一覧" tabindex="0">
     <ul class="task-links">
     @foreach (var task in Model.Tasks)
     {
-        <li data-task-id="@task.TaskId"><span>@task.Name</span>
+        <li data-task-id="@task.TaskId" data-wbs-number="@task.WbsNumber" data-depth="@task.Depth" style="--depth: @task.Depth">
+        <span class="wbs-number">@task.WbsNumber</span><span class="task-name">@task.Name</span>
         <span>@task.Progress%</span>
         <span>@(task.Status switch { WbsApp.Models.Enums.TaskStatus.NotStarted => "未着手", WbsApp.Models.Enums.TaskStatus.InProgress => "作業中", WbsApp.Models.Enums.TaskStatus.InReview => "レビュー中", _ => "完了" })</span>
         <span>期限：@task.EndDate.ToString("yyyy-MM-dd")</span>
@@ -17,5 +21,7 @@ else
         <a asp-action="Create" asp-route-projectId="@Model.ProjectId" asp-route-parentId="@task.TaskId" aria-label="@(task.Name + "に子タスクを追加")">子タスク追加</a></li>
     }
     </ul>
+    </div>
 }
+<p>プロジェクト進捗は末端タスクの平均です。親の進捗は手入力です。子の追加・削除で集計対象が変わります。</p>
 <a asp-controller="Projects" asp-action="Index">プロジェクト一覧へ戻る</a>

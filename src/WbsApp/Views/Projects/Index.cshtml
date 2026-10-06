@@ -1,5 +1,6 @@
 @model ProjectList
 @using WbsApp.Models.Enums
+@using System.Globalization
 @{
     ViewData["Title"] = "プロジェクト一覧";
 }
@@ -30,13 +31,14 @@ else
     <p>該当 @Model.TotalCount 件</p>
     <div class="table-scroll" role="region" aria-label="プロジェクト一覧表" tabindex="0">
     <table>
-        <thead><tr><th scope="col">名前</th><th scope="col">予定期間</th><th scope="col">状態</th><th scope="col">更新日時</th><th scope="col">操作</th></tr></thead>
+        <thead><tr><th scope="col">名前</th><th scope="col">予定期間</th><th scope="col">進捗</th><th scope="col">状態</th><th scope="col">更新日時</th><th scope="col">操作</th></tr></thead>
         <tbody>
         @foreach (var project in Model.Items)
         {
             <tr data-project-id="@project.ProjectId">
                 <td class="project-name">@project.Name</td>
                 <td>@project.StartDate.ToString("yyyy-MM-dd") ～ @project.EndDate.ToString("yyyy-MM-dd")</td>
+                <td>@(project.Progress.HasValue ? project.Progress.Value.ToString("F1", CultureInfo.InvariantCulture) + "%" : "—")</td>
                 <td>@(project.Status == ProjectStatus.Completed ? "完了" : "進行中")</td>
                 <td><time datetime="@project.UpdatedAt.ToString("O")">@project.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</time></td>
                 <td><a asp-action="Edit" asp-route-id="@project.ProjectId" aria-label="@(project.Name + "を編集")">編集</a> <a asp-controller="Tasks" asp-action="Index" asp-route-projectId="@project.ProjectId" aria-label="@(project.Name + "のタスク")">タスク</a></td>
