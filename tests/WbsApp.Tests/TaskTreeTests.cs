@@ -127,7 +127,7 @@ public sealed class TaskTreeTests
         await service.CreateAsync(projects[100].ProjectId, input);
         input.Progress = 25; input.Status = TaskStatus.InProgress;
         await service.CreateAsync(projects[0].ProjectId, input);
-        foreach (var project in projects) project.UpdatedAt = DateTime.UnixEpoch;
+        foreach (var project in await db.Projects.ToListAsync()) project.UpdatedAt = DateTime.UnixEpoch;
         await db.SaveChangesAsync();
         var pageOne = await scope.ServiceProvider.GetRequiredService<ProjectService>().SearchAsync(new ProjectSearch());
         Assert.Equal(100, pageOne.Items.Count);

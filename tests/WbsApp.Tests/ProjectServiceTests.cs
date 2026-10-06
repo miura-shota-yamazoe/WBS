@@ -51,7 +51,8 @@ public sealed class ProjectServiceTests
         Assert.Equal(instant.UtcDateTime, project.CreatedAt);
         Assert.Equal(instant.UtcDateTime.AddTicks(1), project.UpdatedAt);
         Assert.True(await service.UpdateAsync(id, input));
-        Assert.Equal(instant.UtcDateTime.AddTicks(2), project.UpdatedAt);
+        var persisted = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Projects.AsNoTracking().SingleAsync();
+        Assert.Equal(instant.UtcDateTime.AddTicks(2), persisted.UpdatedAt);
         Assert.False(await service.UpdateAsync(Guid.NewGuid(), input));
     }
 

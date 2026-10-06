@@ -8,7 +8,7 @@ using TaskStatus = WbsApp.Models.Enums.TaskStatus;
 
 namespace WbsApp.Services;
 
-public sealed class ProjectService(AppDbContext db, WbsApp.Infrastructure.Clock.AppClock clock)
+public sealed class ProjectService(AppDbContext db, WbsApp.Infrastructure.Clock.AppClock clock, DatabaseWriter writer)
 {
     public async Task<ProjectList> SearchAsync(ProjectSearch search, CancellationToken cancellationToken = default)
     {
@@ -54,33 +54,40 @@ public sealed class ProjectService(AppDbContext db, WbsApp.Infrastructure.Clock.
     public async Task<Guid> CreateAsync(ProjectForm input, CancellationToken cancellationToken = default)
     {
         Validate(input);
-        var now = clock.UtcNow;
-        var project = new Project { Name = input.Name!, CreatedAt = now, UpdatedAt = now };
-        Apply(project, input);
-        db.Projects.Add(project);
-        await db.SaveChangesAsync(cancellationToken);
-        return project.ProjectId;
+        return await writer.ExecuteAsync(_ =>
+        {
+            var now = clock.UtcNow;
+            var project = new Project { Name = input.Name!, CreatedAt = now, UpdatedAt = now };
+            Apply(project, input);
+            db.Projects.Add(project);
+            return Task.FromResult(project.ProjectId);
+        }, cancellationToken);
     }
 
     public async Task<bool> UpdateAsync(Guid id, ProjectForm input, CancellationToken cancellationToken = default)
     {
         Validate(input);
-        var project = await db.Projects.SingleOrDefaultAsync(value => value.ProjectId == id, cancellationToken);
-        if (project is null) return false;
-        // Until T14 supplies warning confirmation, do not silently save changes requiring it.
-        if (input.Status == ProjectStatus.Completed && project.Status != ProjectStatus.Completed && await db.Tasks.AnyAsync(value =>
-            value.ProjectId == id && value.Status != TaskStatus.Completed, cancellationToken))
-            throw new ValidationException("未完了のタスクがあります。完了への変更には確認が必要です。");
-        if ((input.StartDate != project.StartDate || input.EndDate != project.EndDate) &&
-            await db.Tasks.AnyAsync(value => value.ProjectId == id &&
-            (value.StartDate < input.StartDate!.Value || value.EndDate > input.EndDate!.Value), cancellationToken))
-            throw new ValidationException("期間外になるタスクがあります。期間の変更には確認が必要です。");
-        Apply(project, input);
-        var now = clock.UtcNow;
-        project.UpdatedAt = now > project.UpdatedAt ? now : project.UpdatedAt.AddTicks(1);
-        try { await db.SaveChangesAsync(cancellationToken); }
+        try
+        {
+            return await writer.ExecuteAsync(async cancellationToken =>
+            {
+                var project = await db.Projects.SingleOrDefaultAsync(value => value.ProjectId == id, cancellationToken);
+                if (project is null) return false;
+                // Until T14 supplies warning confirmation, do not silently save changes requiring it.
+                if (input.Status == ProjectStatus.Completed && project.Status != ProjectStatus.Completed && await db.Tasks.AnyAsync(value =>
+                    value.ProjectId == id && value.Status != TaskStatus.Completed, cancellationToken))
+                    throw new ValidationException("未完了のタスクがあります。完了への変更には確認が必要です。");
+                if ((input.StartDate != project.StartDate || input.EndDate != project.EndDate) &&
+                    await db.Tasks.AnyAsync(value => value.ProjectId == id &&
+                    (value.StartDate < input.StartDate!.Value || value.EndDate > input.EndDate!.Value), cancellationToken))
+                    throw new ValidationException("期間外になるタスクがあります。期間の変更には確認が必要です。");
+                Apply(project, input);
+                var now = clock.UtcNow;
+                project.UpdatedAt = now > project.UpdatedAt ? now : project.UpdatedAt.AddTicks(1);
+                return true;
+            }, cancellationToken);
+        }
         catch (DbUpdateConcurrencyException) { return false; }
-        return true;
     }
 
     private static void Validate(ProjectForm input) => Validator.ValidateObject(input, new ValidationContext(input), validateAllProperties: true);

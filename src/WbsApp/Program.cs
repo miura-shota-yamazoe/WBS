@@ -22,6 +22,8 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
 builder.Services.AddScoped<DatabaseInitializer>();
 builder.Services.AddScoped<WbsApp.Services.ProjectService>();
 builder.Services.AddScoped<WbsApp.Services.TaskService>();
+builder.Services.AddSingleton<WbsApp.Infrastructure.DatabaseWriteGate>();
+builder.Services.AddScoped<WbsApp.Services.DatabaseWriter>();
 
 var app = builder.Build();
 

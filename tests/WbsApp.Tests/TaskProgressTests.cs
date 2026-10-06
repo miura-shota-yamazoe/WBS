@@ -154,7 +154,8 @@ public sealed class TaskProgressTests
     {
         await using var app = new IsolatedAppFactory(); var project = await TaskServiceTests.SeedProjectAsync(app);
         await using var scope = app.Services.CreateAsyncScope(); var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var service = new TaskService(db, new AppClock(new FixedClock(new DateTimeOffset(2026, 10, 4, 15, 0, 0, TimeSpan.Zero))));
+        var service = new TaskService(db, new AppClock(new FixedClock(new DateTimeOffset(2026, 10, 4, 15, 0, 0, TimeSpan.Zero))),
+            scope.ServiceProvider.GetRequiredService<DatabaseWriter>());
         var parent = (await service.CreateAsync(project, TaskServiceTests.Input()))!.Value;
         var child = (await service.CreateAsync(project, TaskServiceTests.Input(parent)))!.Value;
         var completed = TaskServiceTests.Input(); completed.Status = TaskStatus.Completed;
