@@ -39,9 +39,10 @@ td:not(.project-name) { white-space: nowrap; }
 .project-name { min-width: 12rem; max-width: 28rem; overflow-wrap: anywhere; }
 .pagination { margin-top: 1rem; }
 
-.task-links { list-style: none; padding: 0; }
-.task-links li { display: flex; gap: 1rem; flex-wrap: wrap; padding: .8rem; background: white; border-bottom: 1px solid #cbd5e1; }
-.task-links span { flex: 1; min-width: 12rem; overflow-wrap: anywhere; }
-.task-links li { width: max-content; min-width: 100%; padding-inline-start: calc(.8rem + var(--depth) * 1.5rem); }
-.task-links .wbs-number { flex: 0 0 auto; min-width: max-content; font-weight: 700; }
-.task-links .task-name { font-weight: 600; }
+.wbs-table { width: max-content; min-width: 100%; }
+.wbs-number { white-space: nowrap; font-weight: 700; }
+.wbs-table .task-name, .wbs-table .assignee-name { white-space: normal; }
+.task-indent { padding-inline-start: calc(var(--depth) * 1.5rem); min-width: calc(16rem + var(--depth) * 1.5rem); max-width: calc(28rem + var(--depth) * 1.5rem); overflow-wrap: anywhere; }
+.assignee-name { min-width: 8rem; max-width: 16rem; overflow-wrap: anywhere; }
+.hierarchy-label { display: inline-block; font-size: .85rem; padding: 0 .4rem; border: 1px solid #718096; border-radius: .2rem; }
+.ancestor-task { background: #f3f6fa; }

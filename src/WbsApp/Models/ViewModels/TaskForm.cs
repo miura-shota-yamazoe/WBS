@@ -50,6 +50,12 @@ public sealed class TaskForm : IValidatableObject
 public sealed record TaskLink(Guid TaskId, string Name);
 public sealed record TaskListRow(Guid TaskId, string Name, string? AssigneeName, DateOnly StartDate,
     DateOnly EndDate, int Progress, TaskStatus Status, TaskPriority Priority, string WbsNumber,
-    int Depth, bool IsLeaf, bool IsDelayed);
+    int Depth, bool IsLeaf, bool IsDelayed, Guid? ParentTaskId = null, bool IsMatch = true);
 public sealed record TaskList(Guid ProjectId, string ProjectName, DateOnly StartDate, DateOnly EndDate,
-    ProjectStatus Status, decimal? Progress, IReadOnlyList<TaskListRow> Tasks);
+    ProjectStatus Status, decimal? Progress, IReadOnlyList<TaskListRow> Tasks)
+{
+    public TaskSearch Search { get; init; } = new();
+    public int TotalCount { get; init; }
+    public int MatchCount { get; init; }
+    public bool CanMove => !Search.IsFiltered;
+}

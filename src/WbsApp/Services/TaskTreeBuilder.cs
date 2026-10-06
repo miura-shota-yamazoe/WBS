@@ -49,7 +49,7 @@ public static class TaskTreeBuilder
             var hasChildren = children.TryGetValue(task.TaskId, out var siblings) && siblings.Count > 0;
             result.Add(new TaskListRow(task.TaskId, task.Name, task.AssigneeName, task.StartDate, task.EndDate,
                 task.Progress, task.Status, task.Priority, number, depth, !hasChildren,
-                TaskProgressRules.IsDelayed(task.EndDate, task.Status, today)));
+                TaskProgressRules.IsDelayed(task.EndDate, task.Status, today), task.ParentTaskId));
             if (!hasChildren) continue;
             for (var index = siblings!.Count - 1; index >= 0; index--)
                 stack.Push((siblings[index], number + "." + (index + 1), depth + 1));

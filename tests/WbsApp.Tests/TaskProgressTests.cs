@@ -52,7 +52,7 @@ public sealed class TaskProgressTests
         using var client = host.CreateClient();
         var html = WebUtility.HtmlDecode(await client.GetStringAsync($"/Projects/{projectId}/Tasks"));
         Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, ">遅延</strong>"));
-        Assert.Contains("100%", html); Assert.Contains("期限：2026-10-04", html);
+        Assert.Contains("100%", html); Assert.Contains("2026-10-04", html);
         Assert.Contains("期限前日", html); Assert.Contains("期限当日", html); Assert.Contains("完了済み", html);
     }
 

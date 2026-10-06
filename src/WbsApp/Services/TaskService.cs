@@ -11,8 +11,12 @@ namespace WbsApp.Services;
 
 public sealed class TaskService(AppDbContext db, AppClock clock)
 {
-    public async Task<TaskList?> ListAsync(Guid projectId, CancellationToken cancellationToken = default)
+    public Task<TaskList?> ListAsync(Guid projectId, CancellationToken cancellationToken = default) =>
+        SearchAsync(projectId, new TaskSearch(), cancellationToken);
+
+    public async Task<TaskList?> SearchAsync(Guid projectId, TaskSearch search, CancellationToken cancellationToken = default)
     {
+        Validator.ValidateObject(search, new ValidationContext(search), true);
         var project = await db.Projects.AsNoTracking().Where(value => value.ProjectId == projectId)
             .Select(value => new { value.Name, value.StartDate, value.EndDate, value.Status })
             .SingleOrDefaultAsync(cancellationToken);
@@ -24,8 +28,9 @@ public sealed class TaskService(AppDbContext db, AppClock clock)
         var rows = TaskTreeBuilder.Build(tasks, clock.Today);
         var progress = ProjectProgressCalculator.Calculate(tasks.Select(value =>
             new TaskProgressSource(value.ProjectId, value.TaskId, value.ParentTaskId, value.Progress)));
+        var filtered = TaskWbsSearch.Filter(rows, search);
         return new TaskList(projectId, project.Name, project.StartDate, project.EndDate,
-            project.Status, progress, rows);
+            project.Status, progress, filtered.Rows) { Search = search, TotalCount = rows.Count, MatchCount = filtered.MatchCount };
     }
 
     public async Task<TaskForm?> FormAsync(Guid projectId, Guid? taskId = null, TaskForm? input = null,

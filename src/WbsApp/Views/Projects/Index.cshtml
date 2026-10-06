@@ -36,7 +36,7 @@ else
         @foreach (var project in Model.Items)
         {
             <tr data-project-id="@project.ProjectId">
-                <td class="project-name">@project.Name</td>
+                <td class="project-name"><a asp-controller="Tasks" asp-action="Index" asp-route-projectId="@project.ProjectId">@project.Name</a></td>
                 <td>@project.StartDate.ToString("yyyy-MM-dd") ～ @project.EndDate.ToString("yyyy-MM-dd")</td>
                 <td>@(project.Progress.HasValue ? project.Progress.Value.ToString("F1", CultureInfo.InvariantCulture) + "%" : "—")</td>
                 <td>@(project.Status == ProjectStatus.Completed ? "完了" : "進行中")</td>

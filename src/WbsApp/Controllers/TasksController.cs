@@ -10,9 +10,17 @@ namespace WbsApp.Controllers;
 public sealed class TasksController(TaskService service, ILogger<TasksController> logger) : Controller
 {
     [HttpGet("")]
-    public async Task<IActionResult> Index([FromRoute] Guid projectId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index([FromRoute] Guid projectId, [FromQuery] TaskSearch search, CancellationToken cancellationToken)
     {
-        var list = await service.ListAsync(projectId, cancellationToken);
+        if (!ModelState.IsValid)
+        {
+            var unfiltered = await service.ListAsync(projectId, cancellationToken);
+            if (unfiltered is null) return NotFound();
+            Response.StatusCode = StatusCodes.Status400BadRequest;
+            return View(unfiltered with { Search = search, Tasks = [] });
+        }
+        var list = await service.SearchAsync(projectId, search, cancellationToken);
+        ModelState.Clear();
         return list is null ? NotFound() : View(list);
     }
     [HttpGet("Create")]

@@ -1,27 +1,62 @@
 @model TaskList
 @using System.Globalization
-@{ ViewData["Title"] = "タスク"; }
-<div class="page-heading"><h1>@Model.ProjectName のタスク</h1>
+@using WbsApp.Models.Enums
+@{ ViewData["Title"] = "WBS一覧"; }
+<div class="page-heading"><h1>@Model.ProjectName のWBS</h1>
 <a class="button-link" asp-action="Create" asp-route-projectId="@Model.ProjectId">新規タスク</a></div>
-<p>予定期間：@Model.StartDate.ToString("yyyy-MM-dd") ～ @Model.EndDate.ToString("yyyy-MM-dd") ／ 状態：@(Model.Status == WbsApp.Models.Enums.ProjectStatus.Completed ? "完了" : "進行中") ／ プロジェクト進捗：@(Model.Progress.HasValue ? Model.Progress.Value.ToString("F1", CultureInfo.InvariantCulture) + "%" : "—")</p>
-@if (Model.Tasks.Count == 0) { <p role="status">タスクを登録してください。プロジェクト進捗：タスク未登録</p> }
+<p>予定期間：@Model.StartDate.ToString("yyyy-MM-dd") ～ @Model.EndDate.ToString("yyyy-MM-dd") ／ 状態：@(Model.Status == ProjectStatus.Completed ? "完了" : "進行中") ／ プロジェクト進捗：@(Model.Progress.HasValue ? Model.Progress.Value.ToString("F1", CultureInfo.InvariantCulture) + "%" : "—")</p>
+<form asp-action="Index" asp-route-projectId="@Model.ProjectId" method="get" class="search-form">
+    <div><label asp-for="Search.Name"></label><input id="Search_Name" name="Name" value="@Model.Search.Name" class="text-input" /></div>
+    <div><label for="Status">ステータス</label>
+        <select id="Status" name="Status" class="text-input">
+            <option value="" selected="@(!Model.Search.Status.HasValue)">すべて</option>
+            <option value="0" selected="@(Model.Search.Status == WbsApp.Models.Enums.TaskStatus.NotStarted)">未着手</option>
+            <option value="1" selected="@(Model.Search.Status == WbsApp.Models.Enums.TaskStatus.InProgress)">作業中</option>
+            <option value="2" selected="@(Model.Search.Status == WbsApp.Models.Enums.TaskStatus.InReview)">レビュー中</option>
+            <option value="3" selected="@(Model.Search.Status == WbsApp.Models.Enums.TaskStatus.Completed)">完了</option>
+        </select>
+    </div>
+    <label><input type="checkbox" name="DelayedOnly" value="true" checked="@Model.Search.DelayedOnly" /> 遅延のみ</label>
+    <button type="submit">検索</button><a asp-action="Index" asp-route-projectId="@Model.ProjectId">解除</a>
+</form>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+}
 else
 {
-    <div class="table-scroll" role="region" aria-label="WBSタスク一覧" tabindex="0">
-    <ul class="task-links">
-    @foreach (var task in Model.Tasks)
+    @if (Model.Search.IsFiltered)
     {
-        <li data-task-id="@task.TaskId" data-wbs-number="@task.WbsNumber" data-depth="@task.Depth" style="--depth: @task.Depth">
-        <span class="wbs-number">@task.WbsNumber</span><span class="task-name">@task.Name</span>
-        <span>@task.Progress%</span>
-        <span>@(task.Status switch { WbsApp.Models.Enums.TaskStatus.NotStarted => "未着手", WbsApp.Models.Enums.TaskStatus.InProgress => "作業中", WbsApp.Models.Enums.TaskStatus.InReview => "レビュー中", _ => "完了" })</span>
-        <span>期限：@task.EndDate.ToString("yyyy-MM-dd")</span>
-        @if (task.IsDelayed) { <strong class="field-error">遅延</strong> }
-        <a asp-action="Edit" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@task.TaskId" aria-label="@(task.Name + "を編集")">編集</a>
-        <a asp-action="Create" asp-route-projectId="@Model.ProjectId" asp-route-parentId="@task.TaskId" aria-label="@(task.Name + "に子タスクを追加")">子タスク追加</a></li>
+        <p role="status">一致 @Model.MatchCount 件</p>
     }
-    </ul>
-    </div>
+    @if (!Model.CanMove) { <p>並び替えは検索解除後に操作できます。</p> }
+    @if (Model.TotalCount == 0) { <p role="status">タスクを登録してください。プロジェクト進捗：タスク未登録</p> }
+    else if (Model.Tasks.Count == 0) { <p role="status">条件に一致するタスクがありません。</p> }
+    else
+    {
+        <div class="table-scroll" role="region" aria-label="WBSタスク一覧" tabindex="0">
+        <table class="wbs-table">
+            <thead><tr><th scope="col">WBS</th><th scope="col">タスク名</th><th scope="col">担当者</th><th scope="col">開始</th><th scope="col">終了</th><th scope="col">状態</th><th scope="col">優先度</th><th scope="col">進捗</th><th scope="col">遅延</th><th scope="col">操作</th></tr></thead>
+            <tbody>
+            @foreach (var task in Model.Tasks)
+            {
+                <tr data-task-id="@task.TaskId" data-wbs-number="@task.WbsNumber" data-depth="@task.Depth" class="@(task.IsMatch ? "matched-task" : "ancestor-task")">
+                    <td class="wbs-number">@task.WbsNumber</td>
+                    <td class="task-name"><div style="--depth: @task.Depth" class="task-indent">@task.Name @if (!task.IsMatch) { <span class="hierarchy-label">階層表示</span> }</div></td>
+                    <td class="assignee-name">@(task.AssigneeName ?? "—")</td>
+                    <td>@task.StartDate.ToString("yyyy-MM-dd")</td><td>@task.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td>@(task.Status switch { WbsApp.Models.Enums.TaskStatus.NotStarted => "未着手", WbsApp.Models.Enums.TaskStatus.InProgress => "作業中", WbsApp.Models.Enums.TaskStatus.InReview => "レビュー中", _ => "完了" })</td>
+                    <td>@(task.Priority switch { TaskPriority.High => "高", TaskPriority.Medium => "中", _ => "低" })</td>
+                    <td>@task.Progress%</td>
+                    <td>@if (task.IsDelayed) { <strong class="field-error">遅延</strong> }</td>
+                    <td><a asp-action="Edit" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@task.TaskId" aria-label="@(task.Name + "を編集")">編集</a>
+                    <a asp-action="Create" asp-route-projectId="@Model.ProjectId" asp-route-parentId="@task.TaskId" aria-label="@(task.Name + "に子タスクを追加")">子タスク追加</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+    }
 }
 <p>プロジェクト進捗は末端タスクの平均です。親の進捗は手入力です。子の追加・削除で集計対象が変わります。</p>
 <a asp-controller="Projects" asp-action="Index">プロジェクト一覧へ戻る</a>
